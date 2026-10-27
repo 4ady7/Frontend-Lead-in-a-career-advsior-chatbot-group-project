@@ -92,7 +92,7 @@
           <!-- onkeydown handles enter — shift+enter for newlines would need a textarea -->
           <!-- thought about and tried using textarea instead of type="text", but looked very bad from my point of view as a designer  -->
           <!-- hidden file input triggered by the CV button -->
-          <input id="cv-upload" type="file" accept=".pdf,.doc,.docx,.txt" style="display:none;" onchange="readCV(event)" />
+          <input id="cv-upload" type="file" accept=".txt,.md,.csv,text/plain" style="display:none;" onchange="readCV(event)" />
           <button class="cv-btn" onclick="document.getElementById('cv-upload').click()" title="Upload your CV">Upload CV</button>
           <input id="chat-input" type="text" placeholder="Ask something..." onkeydown="enterSend(event)" />
           <button onclick="sendMsg()">Send</button>
@@ -101,7 +101,7 @@
         <!-- if I had more time: a "clear chat" button -->
         <p class="disclaimer">Not a real careers advisor — always double-check important decisions with an actual human.</p>
       </div>
-
+    </div>
 
       <!--feedback form-->
       <div id="feedback-widget" class="feedback-widget collapsed">
@@ -163,10 +163,8 @@
     </button>
   </div>
 </div>
+  </div>
 
-
-
-  
   <script src="app.js"></script>
 </body>
 </html>

@@ -64,6 +64,22 @@ embeddings = OpenAIEmbeddings(model=embedding_model)
 
 
 # RAG Retriever Initialisation
+def ensure_directory_writable(path: Path) -> None:
+    """
+    Chroma has to update its local database on startup.
+    Directories copied from another machine can arrive without write permission,
+    which makes that startup fail before the API can serve any request.
+    """
+    if not path.exists():
+        return
+
+    targets = [path, *path.rglob("*")]
+    for target in targets:
+        if os.access(target, os.W_OK):
+            continue
+        target.chmod(target.stat().st_mode | 0o700)
+
+
 def build_or_load_retriever():
     """
     Builds a persistent ChromaDB retriever from samples.pdf.
@@ -71,6 +87,8 @@ def build_or_load_retriever():
     """
     if not pdf_path.exists():
         raise FileNotFoundError(f"Could not find {pdf_path}. Keep samples.pdf beside this file.")
+
+    ensure_directory_writable(chroma_dir)
 
     if chroma_dir.exists() and any(chroma_dir.iterdir()):
         #Load existing local vectorstore

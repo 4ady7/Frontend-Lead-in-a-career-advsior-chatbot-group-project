@@ -53,6 +53,36 @@ function getTypingDelay(text) {
   return 900 + Math.random() * 500; //and for long messages giving a bit more breathing room, so they will have a delayed wait time btw 900 and 1400 miliseconds
 }
 
+function resetInterviewPractice() {
+  sessionData.interviewPractice.active = false;
+  sessionData.interviewPractice.awaitingRole = false;
+  sessionData.interviewPractice.question = '';
+  sessionData.interviewPractice.questionIndex = 0;
+  sessionData.interviewPractice.totalQuestions = 0;
+  sessionData.interviewPractice.targetRole = '';
+}
+
+async function postJSON(url, body) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (error) {
+    data = null;
+  }
+
+  if (!response.ok || data == null) {
+    throw new Error('Request failed');
+  }
+
+  return data;
+}
+
 function beginChat() {
 const consentCheckbox = document.getElementById("privacy-consent");
 const warning = document.getElementById("consent-warning");
@@ -104,12 +134,6 @@ function goHome() {
   // Go back to the landing page
   document.getElementById("chat").style.display = "none";
   document.getElementById("home").style.display = "block";
-  document.getElementById('messages').innerHTML = '';
-  document.getElementById('chat-input').value = '';
-  document.getElementById('degree').value = '';
-  document.getElementById('interests').value = '';
-  document.getElementById('privacy-consent').checked = false;
-  document.getElementById('start-btn').disabled = true;
 
   // Clear the chat messages
   const messages = document.getElementById("messages");
@@ -117,10 +141,12 @@ function goHome() {
     messages.innerHTML = "";
   }
 
-  // Clear chat input
+  // Clear chat input and restore the normal placeholder.
+  // Interview practice changes the placeholder, and New Chat has to undo that.
   const msgInput = document.getElementById("chat-input");
   if (msgInput) {
     msgInput.value = "";
+    msgInput.placeholder = "Ask something...";
   }
 
   // Clear uploaded CV input
@@ -158,13 +184,15 @@ function goHome() {
     consentWarning.style.display = "none";
   }
 
+  sessionData.degree = "";
+  sessionData.interests = "";
+  sessionData.chatHistory = [];
+  // Reset the interview state object. Do not assign interviewMode itself:
+  // that name is the function the sidebar button calls.
+  resetInterviewPractice();
+
   // Start a fresh backend conversation next time
   threadId = "student-" + Date.now();
-
-  // Reset interview practice if your app uses these variables
-  interviewMode = false;
-  currentInterviewQuestion = "";
-  currentInterviewIndex = 0;
 }
 
 
@@ -207,20 +235,15 @@ async function sendMsg() {
   const delay = getTypingDelay(msgText);
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_text: msgText,
-        thread_id: threadId,
-        degree: sessionData.degree,
-        interests: sessionData.interests 
-      })
+    const data = await postJSON('http://127.0.0.1:8000/chat', {
+      user_text: msgText,
+      thread_id: threadId,
+      degree: sessionData.degree,
+      interests: sessionData.interests
     });
 
-    const data = await response.json();
     typingBubble.remove();
-    addBotMessage(data.answer, null); // backend doesn't send suggestions yet
+    addBotMessage(data.answer || 'Something went wrong. Please try again.', null);
 
   } catch (error) {
     typingBubble.remove();
@@ -230,8 +253,15 @@ async function sendMsg() {
 
 
 function quickSend (text) {
-document.getElementById('chat-input').value = text;
-sendMsg();//calling the sendMsg function
+  // Sidebar topics are normal career questions. If interview practice is
+  // still running, leave it first so the topic is not scored as an answer.
+  if (sessionData.interviewPractice.active || sessionData.interviewPractice.awaitingRole) {
+    endInterviewPractice();
+  }
+  const input = document.getElementById('chat-input');
+  if (!input) return;
+  input.value = text;
+  sendMsg();
 }
 
 // interview simulation
@@ -267,18 +297,13 @@ async function beginInterviewWithRole(targetRole) {
   const typingBubble = typingDots();
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/interview/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        thread_id: threadId,
-        degree: sessionData.degree,
-        interests: sessionData.interests,
-        target_role: sessionData.interviewPractice.targetRole
-      })
+    const data = await postJSON('http://127.0.0.1:8000/interview/start', {
+      thread_id: threadId,
+      degree: sessionData.degree,
+      interests: sessionData.interests,
+      target_role: sessionData.interviewPractice.targetRole
     });
 
-    const data = await response.json();
     typingBubble.remove();
 
     sessionData.interviewPractice.question = data.question;
@@ -311,21 +336,16 @@ async function sendInterviewAnswer(answerText) {
   const typingBubble = typingDots();
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/interview/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        thread_id: threadId,
-        question_index: sessionData.interviewPractice.questionIndex,
-        question: sessionData.interviewPractice.question,
-        user_answer: answerText,
-        degree: sessionData.degree,
-        interests: sessionData.interests,
-        target_role: sessionData.interviewPractice.targetRole
-      })
+    const data = await postJSON('http://127.0.0.1:8000/interview/answer', {
+      thread_id: threadId,
+      question_index: sessionData.interviewPractice.questionIndex,
+      question: sessionData.interviewPractice.question,
+      user_answer: answerText,
+      degree: sessionData.degree,
+      interests: sessionData.interests,
+      target_role: sessionData.interviewPractice.targetRole
     });
 
-    const data = await response.json();
     typingBubble.remove();
 
     sessionData.interviewPractice.question = data.question;
@@ -351,11 +371,7 @@ async function sendInterviewAnswer(answerText) {
 }
 
 function endInterviewPractice() {
-  sessionData.interviewPractice.active = false;
-  sessionData.interviewPractice.awaitingRole = false;
-  sessionData.interviewPractice.question = '';
-  sessionData.interviewPractice.questionIndex = 0;
-  sessionData.interviewPractice.totalQuestions = 0;
+  resetInterviewPractice();
 
   const input = document.getElementById('chat-input');
   if (input) {
@@ -366,13 +382,20 @@ function endInterviewPractice() {
 }
 
 // handles CV file upload — reads the file and sends its contents as context to the bot
-// only handles text-based files for now (.txt) — PDF/Word would need a backend parser
-// for now, if it's not readable as text, it just sends the filename so the bot knows a CV was shared
+// only handles text files (.txt, .md, .csv) — PDF/Word would need a backend parser
 function readCV(event) {
   const file = event.target.files[0]; // grab the first file the user selected
   if (!file) return; // if no file was selected, stop here and do nothing
 
   event.target.value = ''; // reset the file input so the same file can be uploaded again later if needed
+
+  const textName = /\.(txt|md|csv)$/i.test(file.name || '');
+  const textType = (file.type || '').startsWith('text/');
+  if (!textName && !textType) {
+    addUserMessage(`CV uploaded: ${file.name}`);
+    addBotMessage("Couldn't read that file — try saving it as a .txt and uploading again.", null);
+    return;
+  }
 
   const reader = new FileReader(); // create a FileReader object to read the file's contents
 
@@ -385,20 +408,15 @@ function readCV(event) {
 
     const typingBubble = typingDots(); // show the animated typin dots while waiting for the bot's response
 
-    fetch('http://127.0.0.1:8000/chat', { // send a POST request to the backend with the CV content
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, // tell the server we're sendin JSON
-      body: JSON.stringify({
-        user_text: message, // the CV content wrapped in a prompt asking for feedback
-        thread_id: threadId, // the current session ID so the backend keeps context
-        degree: sessionData.degree, // pass the user's degree for personalised feedback
-        interests: sessionData.interests // pass the user's interests also for personalised feedback
-      })
+    postJSON('http://127.0.0.1:8000/chat', { // send a POST request to the backend with the CV content
+      user_text: message, // the CV content wrapped in a prompt asking for feedback
+      thread_id: threadId, // the current session ID so the backend keeps context
+      degree: sessionData.degree, // pass the user's degree for personalised feedback
+      interests: sessionData.interests // pass the user's interests also for personalised feedback
     })
-    .then(r => r.json()) // parse the response from the server as JSON
     .then(data => {
       typingBubble.remove(); // removee the typing indicator now that the reply has arrived
-      addBotMessage(data.answer, null); // displays the bot's CV feedback in the chat
+      addBotMessage(data.answer || 'Something went wrong reading your CV. Please try again.', null); // displays the bot's CV feedback in the chat
     })
     .catch(() => {
       typingBubble.remove(); // remove the typing indicator even if something went wrong
@@ -547,22 +565,14 @@ async function handleFeedback() {
   }
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        thread_id: threadId,
-        helpfulness: helpfulness,
-        clarity: clarity,
-        relevance: relevance,
-        trust: trust,
-        comment: comment
-      })
+    await postJSON('http://127.0.0.1:8000/feedback', {
+      thread_id: threadId,
+      helpfulness: helpfulness,
+      clarity: clarity,
+      relevance: relevance,
+      trust: trust,
+      comment: comment
     });
-
-    if (!response.ok) {
-      throw new Error('Feedback was not saved');
-    }
 
     document.getElementById('feedback-text').textContent = "Thanks for the feedback!";
 
@@ -574,7 +584,6 @@ async function handleFeedback() {
 
     setTimeout(() => {
       hideFeedback();
-      feedbackText.textContent = 'Rate the chatbot';
     }, 1000);
 
 

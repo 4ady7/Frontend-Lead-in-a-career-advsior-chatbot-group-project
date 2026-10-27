@@ -1,7 +1,7 @@
 """FastAPI bridge for the CareerPath frontend."""
 
 # imports 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -77,10 +77,10 @@ class InterviewAnswerResponse(BaseModel):
 # Request model for saving user feedback about the system
 class FeedbackRequest(BaseModel):
     thread_id: str = "student-001"
-    helpfulness: int
-    clarity: int
-    relevance: int
-    trust: int
+    helpfulness: int = Field(ge=1, le=5)
+    clarity: int = Field(ge=1, le=5)
+    relevance: int = Field(ge=1, le=5)
+    trust: int = Field(ge=1, le=5)
     comment: str | None = ""
     participant_id: str | None = None
     task_label: str | None = None
