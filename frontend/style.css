@@ -1,0 +1,586 @@
+/* 
+  CareerPath styles
+  started simple but the chat layout made things messier than expected
+  added sidebar late on which meant reworking the chat flex layout
+  comments are a bit all over the place but I'll clean them up eventually
+*/
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: system-ui, sans-serif; /* using the default userr interface font of the operating system for a faster, easier, and better user experience*/
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+
+/* ── Home ── */
+
+#home {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 80px 24px 60px;
+  /* top padding took a while to get right — too little felt cramped, too much looked odd on shorter screens */
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 12px;
+}
+
+.tagline {
+  font-size: 18px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.sub {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 40px;
+}
+
+#setup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.privacy-consent {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.privacy-consent label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.privacy-consent input {
+  margin-top: 4px;
+  accent-color: #22c55e;
+  flex-shrink: 0;
+}
+
+.privacy-consent span {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.consent-warning {
+  display: none;
+  font-size: 12px;
+  color: #f87171;
+}
+
+#start-btn:disabled {
+  background: #334155;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+#start-btn:disabled:hover {
+  background: #334155;
+}
+
+.edi-ethics-note {
+  background: #102033;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.edi-ethics-note strong {
+  color: #e2e8f0;
+}
+
+/* inputs-wrap doesn't do much right now — added it when I thought I might style them separately */
+/* kept it in because removing it felt risky and it's not hurting anything */
+.inputs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#setup input {
+  padding: 12px 14px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-family: inherit; /* always forget this and then wonder why the font looks different */
+  outline: none;
+}
+
+#setup input:focus {
+  border-color: #22c55e;
+}
+
+#setup input::placeholder {
+  color: #475569;
+}
+
+#setup button {
+  padding: 12px;
+  background: #22c55e;
+  color: #052e16; /* dark green text on green bg — more readable than black */
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#setup button:hover {
+  background: #16a34a;
+}
+
+
+/* ── Chat layout ── */
+/* this section got more complicated once I added the sidebar */
+/* originally just had a single column, flex row was added later */
+
+#chat {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* making the chat 100% of the height of the user's visible screen */
+  /* if I decided to implement mobile view, I will to change 100vh to 100dvh, and that's to fix the problem of having the menu bar at the bottom blocking the user input row(the part where the user can type and chat with bot) */
+
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #1e293b;
+  background: #0f172a;
+  flex-shrink: 0; /* without this the header shrinks weirdly when content is short */
+}
+
+.chat-title, .chatTitle {
+  font-weight: 600;
+  color: #22c55e; /* green felt right here, tried blue first and it looked off */
+}
+
+.newchat-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.newchat-btn:hover {
+  color: #94a3b8;
+}
+
+/* chat-body is the row that holds sidebar + main chat */
+.chat-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden; /* needed or the whole page scrolled instead of just the message list */
+}
+
+
+/* ── Sidebar ── */
+/* added this near the end — had to hack the chat-body layout a bit to fit it in */
+/* not totally happy with how it looks on mid-size screens but it's okay */
+/* tried collapsible sidebar briefly — too much JS for what it adds */
+
+.sidebar {
+  width: 200px; /* tried 220px but felt too wide, 180px felt too narrow */
+  border-right: 1px solid #1e293b;
+  background: #0a1120;
+  flex-shrink: 0;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  /* still not 100% happy with how this sits on medium screens — around 700px it starts feeling a bit squished */
+}
+
+.sidebar-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+  padding: 0 6px;
+  margin-bottom: 4px;
+}
+
+.sidebar button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  /* tried a subtle gradient here but it looked too designed for what this is */
+  /* background: linear-gradient(135deg, #1e293b, #0f172a); */
+}
+
+.sidebar button:hover {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+
+/* ── Main chat area ── */
+
+.main-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto; /* I did not choose scroll, and I chose auto to add a scroll only if the conversation gets long that it needs a scrollbar */
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 700px; /* stops it getting too wide on large screens if a screen is larger than 700px */
+  width: 100%; /* filling all the available horizontal space on the screen */
+  margin: 0 auto;
+}
+
+
+/* ── now Message bubbles ── */
+
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 70%; /* adding a maximum width to the bubble that contains and surroundes the responses during the conversation */
+}
+
+.msg.bot {
+  align-self: flex-start; /* aligning the bot responses on the left side of the screen */
+}
+
+.msg.user {
+  align-self: flex-end; /* aligning the user responses on the right side of the screen */
+}
+
+.msg.bot .bubble {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px 16px 16px 16px; /* using a flat topleft for the bot responses to give the chat app and the conversation a better feeling more like using imessage */
+  padding: 12px 16px;
+  white-space: pre-wrap; 
+  color: #e2e8f0;
+  line-height: 1.65;
+  /* tried adding a subtle shadow here but looked too heavy */
+  /* box-shadow: 0 4px 12px rgba(0,0,0,0.3); */
+}
+
+.msg.user .bubble {
+  background: #22c55e;
+  color: #052e16;
+  border-radius: 18px 6px 16px 16px; /* slightlyy different from bot, decided to use 18px at the topleft bec it looked better */
+  padding: 12px 16px;
+}
+
+
+/* ── Suggestion buttons ── */
+/* not totally sure if pill shape was right — tried 8px border-radius first and it looked boxy */
+/* keeping pill for now, might revisit if I add icon-style buttons later */
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.sug-btn {
+  padding: 5px 12px;
+  background: none;
+  border: 1px solid #334155;
+  border-radius: 100px; /* pill shape — tried 8px corners but pill looked cleaner */
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.sug-btn:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+
+/* ── Typing indicator ── */
+
+.typing .bubble {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #475569;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+
+/* ── Input row ── */
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid #1e293b;
+  background: #0f172a;
+  max-width: 700px; /* matching the messages max-width so they line up */
+  width: 100%;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+}
+
+.input-row input:focus {
+  border-color: #22c55e;
+}
+
+.input-row input::placeholder {
+  color: #475569;
+}
+
+.input-row button {
+  padding: 10px 17px; /* slightly uneven but looks fine, symmetrical felt too boxy */
+  background: #22c55e;
+  color: #052e16;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.input-row button:hover {
+  background: #16a34a;
+}
+
+/* CV upload button — distinct from the send button so users know it does something different */
+.input-row .cv-btn {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+.input-row .cv-btn:hover {
+  background: #273449;
+  border-color: #22c55e;
+  color: #e2e8f0;
+}
+
+.disclaimer {
+  font-size: 11px;
+  color: #334155;
+  text-align: center;
+  padding: 6px 20px 12px;
+}
+
+
+/* feedback */
+.feedback-widget {
+  position: fixed;
+  bottom: 24px;
+  left: 14px;
+  width: 172px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.feedback-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  background: #22c55e;
+  color: #052e16;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.feedback-toggle:hover {
+  background: #16a34a;
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+
+.feedback-widget.collapsed {
+  width: auto;
+  min-width: 150px;
+  border-radius: 999px;
+}
+
+.feedback-widget.collapsed .feedback-form {
+  display: none;
+}
+
+.feedback-widget.collapsed .feedback-toggle {
+  border-radius: 999px;
+  padding: 10px 16px;
+}
+
+.feedback-widget:not(.collapsed) .feedback-toggle {
+  display: none;
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feedback-header p {
+  font-size: 13px;
+  color: #e2e8f0;
+  font-weight: 700;
+  margin: 0;
+}
+
+.feedback-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.feedback-close:hover {
+  color: #e2e8f0;
+}
+
+.feedback-form label {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+
+.feedback-form select,
+.feedback-form textarea {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.feedback-form select:focus,
+.feedback-form textarea:focus {
+  border-color: #22c55e;
+}
+
+.feedback-form textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.feedback-submit {
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: #22c55e;
+  color: #052e16;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.feedback-submit:hover {
+  background: #16a34a;
+}
+
+/* ── Mobile ── */
+/* sidebar just hides on small screens for now — not perfect but saves a lot of hassle */
+/* if I had more time I'd do a slide-out drawer or collapse it at 700px too */
+/* also the message bubbles go a bit wide on very small screens — haven't fixed that yet */
+/* if I redid this: hamburger menu for sidebar, textarea instead of input, better bubble max-width */
+/* the input row also gets a bit cramped below 380px — low priority, most phones are fine */
+
+/*if the screen is 600 pixels wide or smaller then instead overwrite and apply the following, */
+@media (max-width: 600px) {
+  #home { padding: 48px 20px; }
+  h1 { font-size: 24px; }
+  .tagline { font-size: 16px; }
+  .sidebar { display: none; }
+}
+
+

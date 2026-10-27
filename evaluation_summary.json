@@ -1,0 +1,37 @@
+{
+  "interaction_log_path": "/Users/haniyya/Library/CloudStorage/OneDrive-TheUniversityofNorthampton/ai group project/Career advisor chatbot/anonymous_interaction_log.csv",
+  "feedback_log_path": "/Users/haniyya/Library/CloudStorage/OneDrive-TheUniversityofNorthampton/ai group project/Career advisor chatbot/anonymous_feedback_log.csv",
+  "interview_log_path": "/Users/haniyya/Library/CloudStorage/OneDrive-TheUniversityofNorthampton/ai group project/Career advisor chatbot/anonymous_interview_practice_log.csv",
+  "total_interactions": 81,
+  "unique_anonymous_threads": 26,
+  "retrieval_grade_counts": {
+    "good": 41,
+    "poor": 40
+  },
+  "retry_rate_percent": 67.9,
+  "rewrite_rate_percent": 22.22,
+  "average_latency_ms": 4056.21,
+  "average_answer_word_count": 74.83,
+  "feedback_count": 11,
+  "average_feedback": {
+    "helpfulness": 4.27,
+    "clarity": 4.18,
+    "relevance": 4.36,
+    "trust": 4.36
+  },
+  "interview_practice_count": 37,
+  "average_interview_score": 2.11,
+  "interview_question_counts": {
+    "1": 20,
+    "2": 7,
+    "3": 6,
+    "4": 2,
+    "5": 2
+  },
+  "total_estimated_user_tokens": 1733,
+  "total_estimated_answer_tokens": 7841,
+  "total_estimated_tokens": 9574,
+  "average_estimated_tokens_per_interaction": 118.2,
+  "total_estimated_cost_gbp": 0.004502,
+  "average_estimated_cost_per_interaction_gbp": 5.6e-05
+}
